@@ -31,54 +31,67 @@ jobs:
 
 
   frontend-tests:
-    name: Frontend Tests
+    name: Frontend Integration Tests
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
 
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
-      
-      - name: Install Playwright browsers
-        working-directory: frontend
-        run: npx playwright install --with-deps
-     
-      - name: Build frontend
-        working-directory: frontend
-        run: npm run build
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
 
-      - name: Start frontend server
-        working-directory: frontend
-        run: |
-         npm run start &
-         npx wait-on http://localhost:3000
-        
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-         python-version: "3.11"
+    # ---------------- BACKEND ----------------
+    - name: Install backend dependencies
+      working-directory: backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      - name: Install backend dependencies
-        working-directory: backend
-        run: |
-         python -m pip install --upgrade pip
-         pip install -r requirements.txt
+    - name: Start backend
+      working-directory: backend
+      run: |
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+    
+    - name: Wait for backend to be ready
+      run: |
+        for i in {1..15}; do
+          curl -s http://localhost:8000 && break
+          sleep 2
+        done
 
-      - name: Start backend
-        working-directory: backend
-        run: |
-         python app/main.py &
+    # ---------------- FRONTEND ----------------
+    - name: Install frontend dependencies
+      working-directory: frontend
+      run: npm ci
 
-      - name: Run frontend tests
-        working-directory: frontend
-        run: npm run test
+    - name: Install Playwright browsers
+      working-directory: frontend
+      run: npx playwright install --with-deps
 
+    - name: Build frontend
+      working-directory: frontend
+      run: npm run build
 
+    - name: Start frontend
+      working-directory: frontend
+      run: |
+        npm run start &
+    
+    - name: Wait for frontend
+      run: |
+        for i in {1..15}; do
+          curl -s http://localhost:3000 && break
+          sleep 2
+        done
+
+    - name: Run frontend tests
+      working-directory: frontend
+      run: npm run test
