@@ -50,6 +50,11 @@ jobs:
       - name: Install Playwright browsers
         working-directory: frontend
         run: npx playwright install --with-deps
+     
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        
       - name: Install wait-on
         working-directory: frontend
         run: npm install --no-save wait-on
