@@ -80,6 +80,10 @@ jobs:
         run: |
          python app/main.py &
 
+      - name: Wait for backend
+        run: npx wait-on http://localhost:8000
+
+
       - name: Run frontend tests
         working-directory: frontend
         run: npm run test
