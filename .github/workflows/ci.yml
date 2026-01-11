@@ -54,7 +54,7 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
-        
+
       - name: Install wait-on
         working-directory: frontend
         run: npm install --no-save wait-on
@@ -64,6 +64,21 @@ jobs:
         run: |
          npm run start &
          npx wait-on http://localhost:3000
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+         python-version: "3.11"
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+         pip install -r requirements.txt
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+         python app/main.py &
 
       - name: Run frontend tests
         working-directory: frontend
