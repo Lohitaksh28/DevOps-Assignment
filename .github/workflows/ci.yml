@@ -55,10 +55,6 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Install wait-on
-        working-directory: frontend
-        run: npm install --no-save wait-on
-
       - name: Start frontend server
         working-directory: frontend
         run: |
@@ -79,10 +75,6 @@ jobs:
         working-directory: backend
         run: |
          python app/main.py &
-
-      - name: Wait for backend
-        run: npx wait-on http://localhost:8000
-
 
       - name: Run frontend tests
         working-directory: frontend
